@@ -7,50 +7,43 @@ public class AmazonReview {
     private String reviewText, reviewHeadline, productTitle, productCategory, productID, customerID, reviewDate, reviewID;
     private long helpfulVotes, starRating, totalVotes;
     private boolean isVerifiedPurchased;
+    private boolean isReal;
     private String[] words;
     private ArrayList<String> wordsSpecificToProduct;
     public static ArrayList<String> positiveWords = new ArrayList<>();
     public static ArrayList<String> negativeWords = new ArrayList<>();
+    private boolean reviewTextSet = false;
+    private boolean productNameSet = false;
+    private boolean productCategorySet = false;
+    private boolean reviewIDset = false;
 
-    public AmazonReview(String reviewText, String reviewHeadline, String productTitle, String productCategory, String productID, String customerID, String reviewDate, long helpfulVotes, long starRating, long totalVotes, boolean isVerifiedPurchased, String reviewID) {
-        this.customerID = customerID;
-        this.reviewDate = reviewDate;
-        this.reviewHeadline = reviewHeadline;
-        this.reviewText = reviewText;
-        this.productTitle = productTitle;
-        this.productCategory = productCategory;
-        this.productID = productID;
-        this.helpfulVotes = helpfulVotes;
-        this.starRating = starRating;
-        this.totalVotes = totalVotes;
-        this.isVerifiedPurchased = isVerifiedPurchased;
-        this.reviewID = reviewID;
-        this.words = getWords();
-        this.wordsSpecificToProduct = getProductSpecificWords();
-        loadSentimentFiles(positiveWords, "data/positive-words.txt");
-        loadSentimentFiles(negativeWords, "data/negative-words.txt");
-    }
-
-    private String[] getWords() {
-        String[] words = getReviewText().split(" ");
-        for (int i = 0; i < words.length; i++) {
-            words[i] = words[i].toLowerCase();
-            words[i] = stripPunctuation(words[i]);
+    public AmazonReview() {       //String reviewText, String reviewHeadline, String productTitle, String productCategory, String productID, String customerID, String reviewDate, long helpfulVotes, long starRating, long totalVotes, boolean isVerifiedPurchased, String reviewID) {
+//        this.customerID = customerID;
+//        this.reviewDate = reviewDate;
+//        this.reviewHeadline = reviewHeadline;
+//        this.reviewText = reviewText;
+//        this.productTitle = productTitle;
+//        this.productCategory = productCategory;
+//        this.productID = productID;
+//        this.helpfulVotes = helpfulVotes;
+//        this.starRating = starRating;
+//        this.totalVotes = totalVotes;
+//        this.isVerifiedPurchased = isVerifiedPurchased;
+//        this.reviewID = reviewID;
+//
+        if (reviewTextSet) {
+            this.words = getWords();
         }
-        return words;
-    }
-    public String[] getAllWords(){
-        return words;
-    }
-
-    private String stripPunctuation(String word) {
-        String output = "";
-        for (int i = 0; i < word.length(); i++) {
-            if ("abcdefghijklmnopqrstuvwxyz'-".contains(word.substring(i, i + 1))) {
-                output += word.substring(i, i + 1);
-            }
+        if (productNameSet && productCategorySet) {
+            this.wordsSpecificToProduct = getProductSpecificWords();
         }
-        return output;
+
+        if (positiveWords.size() == 0) {
+            loadSentimentFiles(positiveWords, "data/positive-words.txt");
+        }
+        if (negativeWords.size() == 0) {
+            loadSentimentFiles(negativeWords, "data/negative-words.txt");
+        }
     }
 
     private void loadSentimentFiles(ArrayList<String> wordlist, String filename) {
@@ -70,6 +63,96 @@ public class AmazonReview {
         }
     }
 
+    public void setTruth(boolean isReal) {
+        this.isReal = isReal;
+    }
+
+    public void setReviewText(String reviewText) {
+        this.reviewText = reviewText;
+        reviewTextSet = true;
+        if (reviewTextSet) {
+            this.words = getWords();
+        }
+    }
+
+    public void setCustomerID(String customerID) {
+        this.customerID = customerID;
+    }
+
+    public void setHelpfulVotes(long helpfulVotes) {
+        this.helpfulVotes = helpfulVotes;
+    }
+
+    public void setProductCategory(String productCategory) {
+        this.productCategory = productCategory;
+        productCategorySet = true;
+        if (productNameSet && productCategorySet) {
+            this.wordsSpecificToProduct = getProductSpecificWords();
+        }
+    }
+
+    public void setProductID(String productID) {
+        this.productID = productID;
+    }
+
+    public void setProductTitle(String productTitle) {
+        this.productTitle = productTitle;
+        productNameSet = true;
+        if (productNameSet && productCategorySet) {
+            this.wordsSpecificToProduct = getProductSpecificWords();
+        }
+    }
+
+    public void setReviewDate(String reviewDate) {
+        this.reviewDate = reviewDate;
+    }
+
+    public void setReviewID(String reviewID) {
+        this.reviewID = reviewID;
+        reviewIDset = true;
+    }
+
+    public void setReviewHeadline(String reviewHeadline) {
+        this.reviewHeadline = reviewHeadline;
+    }
+
+    public void setStarRating(long starRating) {
+        this.starRating = starRating;
+    }
+
+    public void setTotalVotes(long totalVotes) {
+        this.totalVotes = totalVotes;
+    }
+
+    public void setVerifiedPurchased(boolean verifiedPurchased) {
+        isVerifiedPurchased = verifiedPurchased;
+    }
+
+
+    private String[] getWords() {
+        String[] words = getReviewText().split(" ");
+        for (int i = 0; i < words.length; i++) {
+            words[i] = words[i].toLowerCase();
+            words[i] = stripPunctuation(words[i]);
+        }
+        return words;
+    }
+
+    public String[] getAllWords() {
+        return words;
+    }
+
+    private String stripPunctuation(String word) {
+        String output = "";
+        for (int i = 0; i < word.length(); i++) {
+            if ("abcdefghijklmnopqrstuvwxyz'-".contains(word.substring(i, i + 1))) {
+                output += word.substring(i, i + 1);
+            }
+        }
+        return output;
+    }
+
+
     private String getSentiment() {
         int positiveWordCount = 0;
         int negativeWordCount = 0;
@@ -79,7 +162,7 @@ public class AmazonReview {
         for (String word : negativeWords) {
             negativeWordCount += countWord(word);
         }
-       // System.out.println("Positive word count is "+positiveWordCount);
+        // System.out.println("Positive word count is "+positiveWordCount);
         //System.out.println("negative word count is "+ negativeWordCount);
         if (positiveWordCount == 0 && negativeWordCount == 0) return "neutral";
         if (positiveWordCount == 0) return "extremely negative";
@@ -134,7 +217,10 @@ public class AmazonReview {
     }
 
     public String getReviewText() {
-        return reviewText;
+        if (reviewTextSet) {
+            return reviewText;
+        }
+        return "";
     }
 
     public String getReviewHeadline() {
@@ -174,7 +260,15 @@ public class AmazonReview {
     }
 
     public String getReviewID() {
-        return reviewID;
+        if (reviewIDset) {
+            return reviewID;
+        } else {
+            return "null";
+        }
+    }
+
+    public String getTruthOfReview() {
+        return isReal ? "real" : "fake";
     }
 
     public boolean getVerifiedPurcahse() {
@@ -182,6 +276,7 @@ public class AmazonReview {
     }
 
     public int countWord(String word) {
+        if (!reviewTextSet) return 0;
         int count = 0;
         for (int i = 0; i < words.length; i++) {
             if (words[i].equals(word)) {
